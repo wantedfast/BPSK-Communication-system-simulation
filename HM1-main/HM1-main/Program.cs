@@ -30,8 +30,8 @@ namespace Homework1
 
             // this part is add noise
             //double noise = Math.Sqrt(1 / t);
-
-            double noise = 1 / value;
+            // set the EC to 5;
+            double noise = 5 / value;
 
             // generate the noise by random
             var seed = Guid.NewGuid().GetHashCode();
