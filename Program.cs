@@ -78,13 +78,14 @@ namespace Homework1
 
             double[] cArray = new double[7];
 
+            int flag = 0;
             for (int i = 0; i < 7; i++)
             {
                 int temp = 0;
 
                 for (int j = 0; j < 4; j++)
                 {
-                    cArray[j] = (a[temp] * matrixG[j, i]) + (a[temp+1] * matrixG[j + 1, i]) + (a[temp+2] * matrixG[j + 2, i]) + (a[temp+3] * matrixG[j + 3, i]);
+                    cArray[flag++] = (a[temp] * matrixG[j, i]) + (a[temp+1] * matrixG[j + 1, i]) + (a[temp+2] * matrixG[j + 2, i]) + (a[temp+3] * matrixG[j + 3, i]);
                     break;
                 }
             }
@@ -104,8 +105,8 @@ namespace Homework1
             // eb/n = 1/R * Ec/2*q^2 set the variable as n
 
             // this part is add noise
-            double t = (value) * 2;
-            double noise = 7 / t;
+            double t = (value) * (8/7);
+            double noise = 1 / t;
 
             Random ran = new Random();
             double n = ran.NextDouble() * (noise - 0) + 0;
@@ -118,44 +119,46 @@ namespace Homework1
             }
 
             double[] c = new double[7];
+            
+            
             for (int i = 0; i < 7; i++)
             {
-                c[i] = r[i]<s[i]?c[i]:s[i];
+                c[i] = r[i]<s[i]?r[i]:s[i];
             }
 
             int count = 0;
+
             for (int i = 0; i < 7; i++)
             {
-                if (c[i] == cArray[i])
-                {
-                    count++;
-                }
+                double value = c[i]-cArray[i];
+                value = Math.Pow(value, 2);
+
             }
 
-            Console.WriteLine($"Accuarcy rate is: \t{(double)count/7}");
+            Console.WriteLine($"Accuarcy rate is: %{(double)count/7*100}");
         }
 
         static void Main(string[] args)
         {
             
             MockBPSKwithHCode();
-            
-            //int count = 0;
 
-            //for (int i = 0; i < 10; i++)
-            //{
-            //    int n = random();
- 
-            //    int result = MockBPSK(random());
+            int count = 0;
 
-            //    if (n == result)
-            //    {
-            //        count++;
-            //    }
-            //}
+            for (int i = 0; i < 10; i++)
+            {
+                int n = random();
 
-            //float correctPer = count / (float)10;
-            //Console.WriteLine($"Accuarcy rate is: \t{correctPer}");
+                int result = MockBPSK(random());
+
+                if (n == result)
+                {
+                    count++;
+                }
+            }
+
+            float correctPer = count / (float)10;
+            Console.WriteLine($"Accuarcy rate is: %{correctPer * 100}");
         }
     } 
 }
