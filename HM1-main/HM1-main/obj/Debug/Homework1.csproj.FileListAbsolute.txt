@@ -30,11 +30,6 @@ C:\Users\ITA\Downloads\HM1-main\HM1-main\obj\Debug\Homework1.csproj.SuggestedBin
 C:\Users\ITA\Downloads\HM1-main\HM1-main\obj\Debug\Homework1.csproj.CoreCompileInputs.cache
 C:\Users\ITA\Downloads\HM1-main\HM1-main\obj\Debug\Homework1.exe
 C:\Users\ITA\Downloads\HM1-main\HM1-main\obj\Debug\Homework1.pdb
-F:\Homework\HM1\HM1-main\HM1-main\bin\Debug\Homework1.exe.config
-F:\Homework\HM1\HM1-main\HM1-main\bin\Debug\Homework1.exe
-F:\Homework\HM1\HM1-main\HM1-main\bin\Debug\Homework1.pdb
-F:\Homework\HM1\HM1-main\HM1-main\obj\Debug\Homework1.csproj.AssemblyReference.cache
-F:\Homework\HM1\HM1-main\HM1-main\obj\Debug\Homework1.csproj.SuggestedBindingRedirects.cache
-F:\Homework\HM1\HM1-main\HM1-main\obj\Debug\Homework1.csproj.CoreCompileInputs.cache
-F:\Homework\HM1\HM1-main\HM1-main\obj\Debug\Homework1.exe
-F:\Homework\HM1\HM1-main\HM1-main\obj\Debug\Homework1.pdb
+C:\Users\ITA\Downloads\HM1-main\HM1-main\bin\Debug\OxyPlot.dll
+C:\Users\ITA\Downloads\HM1-main\HM1-main\bin\Debug\OxyPlot.xml
+C:\Users\ITA\Downloads\HM1-main\HM1-main\obj\Debug\Homework1.csproj.CopyComplete

@@ -3,81 +3,111 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Linq;
+using System.Net;
 using System.Net.Http.Headers;
 using System.Runtime.InteropServices;
 using System.Runtime.Remoting.Metadata.W3cXsd2001;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using OxyPlot;
+using OxyPlot.Axes;
+using OxyPlot.Series;
 
 namespace Homework1
 {
     internal class Program
     {
         static double e = 2.71;
+        static int Ec = 1;
+        static int[] ber = new int[10];
+        static int errors = 0;
 
-        static int MockBPSK(int m)
+        private static List<double> dbValues = new List<double>();
+        private static List<double> berValues = new List<double>();
+
+        static void MockBPSK(int m, double db, Random rand)
         {
-            //Random rnd = new Random();
-            
             // transmitted m.
             int s = 1 - 2 * m;
 
-            // e*log eb/n = 1, set eb/n = value
-            double value = Math.Pow(10, 0.1);
+            double EbN0 = Math.Pow(10, db / 10);
 
-            // eb/n = 1/R * Ec/2*q^2 set the variable as n
+            double noise = Math.Sqrt(Ec / (2 * EbN0));
 
-            // this part is add noise
-            //double noise = Math.Sqrt(1 / t);
-            // set the EC to 5;
-            double noise = 5 / value;
+            // generate the noise by with Gaussian random
+            double n = noise * rand.NextGaussian();
 
-            // generate the noise by random
-            var seed = Guid.NewGuid().GetHashCode();
-            Random random = new Random(seed);
-
-            double result = random.NextDouble() * (noise - 0) + 0;
+            // add noise
+            double result = Math.Sqrt(Ec) * s + n;
 
             // receive signal
-            double re = s + result;
+            int detectedBit = result >= 0 ? 0 : 1;
 
-            // dected m
-            if (re >= 0)
+            if (detectedBit != m)
             {
-                return 0;
+                errors = errors + 1;
             }
-            else if(re<0)
+        }
+
+        static void BER()
+        {
+            Random rand = new Random();
+
+            int m = rand.Next(2);
+
+            double[] signal = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+
+            foreach (double db in signal)
             {
-                return 1;
+                for (int i = 0; i < 10000; i++)
+                {
+                    MockBPSK(m, db, rand);
+                }
+
+                double ber = (double)errors / 10000;
+                Console.WriteLine($"Eb/N0 = {db} dB, BER = {ber}");
+
+                dbValues.Add(db);
+                berValues.Add(ber);
+            }
+        }
+
+        static void Plot()
+        {
+            BER();
+
+            PlotModel plotModel = new PlotModel { Title = "BER vs Eb/n0" };
+
+            LogarithmicAxis xAxis = new LogarithmicAxis { Position = AxisPosition.Bottom, Title = "Eb/n0(db)", };
+            LogarithmicAxis yAxis = new LogarithmicAxis { Position = AxisPosition.Left, Title = "BER", Base = 10, Minimum = 1e-6, Maximum = 1e-1, MajorStep = 1e-1 };
+
+            LineSeries line = new LineSeries { MarkerType = MarkerType.Circle, MarkerSize = 4, MarkerStroke = OxyColors.Blue };
+
+            for (int i = 0; i < dbValues.Count; i++)
+            {
+                line.Points.Add(new DataPoint(dbValues[i], berValues[i]));
             }
 
-            return 0;
+            plotModel.Series.Add(line);
+            plotModel.Axes.Add(xAxis);
+            plotModel.Axes.Add(yAxis);
 
-            //int decectedM = 0; ;
+            var pdf = new PdfExporter { Width = 600, Height = 400 };
 
-            //if (re >= 0)
-            //{
-            //    decectedM = 0;
-            //}
-            //else if (re < 0)
-            //{
-            //    decectedM = 1 ;
-            //}
-
-            //if (decectedM == s)
-            //{
-            //    return 1;       
-            //}
-            //else { return 0; }
+            using (var stream = System.IO.File.Create(@"C:\Users\ITA\Desktop\BPSK.pdf"))
+            {
+                pdf.Export(plotModel, stream);
+            }
         }
 
         static int random()
         {
             var seed = Guid.NewGuid().GetHashCode();
             Random r = new Random(seed);
-            int i = r.Next(0,10000);
-            
+            int i = r.Next(0, 10000);
+
             return i % 2;
         }
 
@@ -85,9 +115,9 @@ namespace Homework1
         {
             int[] a = new int[4];
 
-            for (int i = 0; i < 4; i++) 
+            for (int i = 0; i < 4; i++)
             {
-                a[i]=random(); 
+                a[i] = random();
             }
 
             // Convert input bits to a 4x1 matrix
@@ -102,22 +132,8 @@ namespace Homework1
                 {1, 0, 0, 0, 1, 0,  1},
                 { 0, 1, 0, 0, 1, 1, 1},
                 { 0, 0, 1, 0, 1, 1, 0},
-                { 0, 0, 0, 1, 0, 1, 1} 
+                { 0, 0, 0, 1, 0, 1, 1}
             };
-
-            //double[] cArray = new double[7];
-
-            //int flag = 0;
-            //for (int i = 0; i < 7; i++)
-            //{
-            //    int temp = 0;
-
-            //    for (int j = 0; j < 4; j++)
-            //    {
-            //        cArray[flag++] = (a[temp] * matrixG[j, i]) + (a[temp+1] * matrixG[j + 1, i]) + (a[temp+2] * matrixG[j + 2, i]) + (a[temp+3] * matrixG[j + 3, i]);
-            //        break;
-            //    }
-            //}
 
             int[,] outputVector = new int[7, 1];
             for (int i = 0; i < 7; i++)
@@ -141,7 +157,7 @@ namespace Homework1
 
             // s_i = f(c_i)= 1 - 2c_i;
             int[] s = new int[7];
-            
+
             for (int i = 0; i < 7; i++)
             {
                 s[i] = 1 - 2 * outputBits[i];
@@ -153,7 +169,7 @@ namespace Homework1
             // eb/n = 1/R * Ec/2*q^2 set the variable as n
 
             // this part is add noise
-            double t = (value) * (8/7);
+            double t = (value) * (8 / 7);
             double noise = 1 / t;
 
             Random ran = new Random();
@@ -167,13 +183,9 @@ namespace Homework1
             }
 
             double[] c = new double[7];
-            
-            int count = 0;
 
             double[] distance = new double[4];
 
-           
-            
             for (int i = 0; i < 4; i++)
             {
                 double sum = 0;
@@ -186,10 +198,10 @@ namespace Homework1
 
                 distance[i] = Math.Sqrt(sum);
             }
-                
+
             double[] tempArray = new double[4];
-            
-            for (int i = 0;i<4;i++)
+
+            for (int i = 0; i < 4; i++)
             {
                 tempArray[i] = distance[i];
             }
@@ -202,12 +214,12 @@ namespace Homework1
             for (int i = 0; i < 4; i++)
             {
                 if (tempArray[i] == miniDistance)
-                { poistion = i; } 
+                { poistion = i; }
             }
 
             int errorBitNumber = 0;
-            
-            for(int i = 0;i<7;i++)
+
+            for (int i = 0; i < 7; i++)
             {
                 if (matrixG[poistion, i] != outputBits[i])
                 {
@@ -215,7 +227,7 @@ namespace Homework1
                 }
             }
 
-            Console.WriteLine($"MockBPSKwithHCode Accuarcy rate is: %{(double)errorBitNumber/7*100}");
+            Console.WriteLine($"MockBPSKwithHCode Accuarcy rate is: %{(double)errorBitNumber / 7 * 100}");
         }
 
         public static void BubbleSort(double[] arr)
@@ -244,32 +256,21 @@ namespace Homework1
 
         static void Main(string[] args)
         {
-
             //MockBPSKwithHCode();
 
-            int count = 0;
-
-            //for (int i = 0; i < 10; i++)
-            //{
-            //    count += MockBPSK(random());
-            //}
-
-            for (int i = 0; i < 1000; i++)
-            {
-                // generate m
-                int n = random();
-
-                // the result is dected m
-                int result = MockBPSK(n);
-
-                if (result == n)
-                {
-                    count++;
-                }
-            }
-
-            float correctPer = (float)count / 1000; 
-            Console.WriteLine($"MockBPSK Accuarcy rate is:{correctPer * 100}%");
+            Plot();
         }
-    } 
+    }
+}
+
+static class RandomExtensions
+{
+    public static double NextGaussian(this Random random)
+    {
+        double u1 = 1.0 - random.NextDouble();
+        double u2 = 1.0 - random.NextDouble();
+        double randStdNormal = Math.Sqrt(-2.0 * Math.Log(u1)) * Math.Sin(2.0 * Math.PI * u2);
+
+        return randStdNormal;
+    }
 }
